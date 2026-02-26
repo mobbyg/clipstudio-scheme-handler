@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BOTTLE="Clip Studio"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/clipstudio"
+QUEUE="$CACHE_DIR/queue.txt"
+
+SCRIPT_LOG="$CACHE_DIR/worker.script.log"
+BOTTLES_LOG="$CACHE_DIR/worker.bottles.log"
+
+LOCK="${XDG_RUNTIME_DIR:-/tmp}/clipstudio-worker.lock"
+
+mkdir -p "$CACHE_DIR"
+touch "$SCRIPT_LOG" "$BOTTLES_LOG"
+
+ts() { date '+%F %T'; }
+slog() { echo "$(ts) $*" >> "$SCRIPT_LOG"; }
+
+MAX_SECONDS=60
+START_EPOCH="$(date +%s)"
+
+exec 9>"$LOCK"
+if ! flock -n 9; then
+  slog "lock held, exiting"
+  exit 0
+fi
+
+slog "=== worker start pid=$$ ==="
+
+clean_url() {
+  local u="$1"
+  u="${u#"${u%%[![:space:]]*}"}"
+  u="${u%"${u##*[![:space:]]}"}"
+  if [[ "$u" == \'*\' ]]; then u="${u:1:${#u}-2}"; fi
+  if [[ "$u" == \"*\" ]]; then u="${u:1:${#u}-2}"; fi
+  printf '%s' "$u"
+}
+
+clipstudio_running() {
+  pgrep -f 'CLIPStudio\.exe' >/dev/null 2>&1
+}
+
+bsh() {
+  local cmd="$1"
+  slog "bsh: $cmd"
+  flatpak run --command=bottles-cli com.usebottles.bottles shell \
+    -b "$BOTTLE" \
+    -i "$cmd" >>"$BOTTLES_LOG" 2>&1 || true
+}
+
+start_ui_async() {
+  slog "starting UI async via bottles run -p CLIPStudio"
+  systemd-run --user --scope --quiet \
+    /usr/bin/flatpak run --command=bottles-cli com.usebottles.bottles run \
+      -b "$BOTTLE" -p "CLIPStudio" >>"$BOTTLES_LOG" 2>&1 || true
+}
+
+open_url_shell_once() {
+  local url="$1"
+  bsh "cmd /c start \"\" \"$url\""
+}
+
+open_url_direct_once() {
+  local url="$1"
+  bsh "\"C:\\Program Files\\CELSYS\\CLIP STUDIO 1.5\\CLIP STUDIO\\CLIPStudio.exe\" -url \"$url\""
+}
+
+IDLE=0
+while true; do
+  NOW="$(date +%s)"
+  if (( NOW - START_EPOCH > MAX_SECONDS )); then
+    slog "max runtime hit (${MAX_SECONDS}s), exiting"
+    break
+  fi
+
+  if [[ -s "$QUEUE" ]]; then
+    RAW="$(tail -n 1 "$QUEUE" || true)"
+    : > "$QUEUE"
+    IDLE=0
+
+    URL="$(clean_url "$RAW")"
+    slog "got URL(raw): $RAW"
+    slog "got URL(clean): $URL"
+
+    if clipstudio_running; then
+      slog "clipstudio_running=yes -> send once via shell"
+      open_url_shell_once "$URL"
+      sleep 1
+      continue
+    fi
+
+    slog "clipstudio_running=no -> start UI then send"
+    start_ui_async
+    sleep 3
+
+    slog "send via shell"
+    open_url_shell_once "$URL"
+
+    sleep 2
+    slog "cold-start fallback: send via -url once"
+    open_url_direct_once "$URL"
+
+    sleep 1
+    continue
+  fi
+
+  IDLE=$((IDLE + 1))
+  if (( IDLE >= 14 )); then
+    break
+  fi
+  sleep 0.5
+done
+
+slog "=== worker done ==="
