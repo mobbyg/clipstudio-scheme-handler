@@ -1,4 +1,3 @@
-cat > README.md <<'EOF'
 # clipstudio-scheme-handler (Linux + Bottles)
 
 Open `clipstudio://` links from the Clip Studio Assets site on Linux by forwarding them into a Bottles-installed Clip Studio.
