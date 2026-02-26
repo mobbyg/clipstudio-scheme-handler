@@ -1,0 +1,9 @@
+Package: clipstudio-scheme-handler
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Your Name <you@example.com>
+Description: x-scheme-handler for clipstudio:// links using Bottles
+ Installs a desktop handler for clipstudio:// URLs and forwards them
+ to Clip Studio running inside Bottles.
