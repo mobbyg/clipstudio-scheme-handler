@@ -50,3 +50,53 @@ Download the `.deb` from Releases, then:
 ```bash
 sudo dpkg -i clipstudio-scheme-handler_*_all.deb
 sudo update-desktop-database /usr/share/applications
+
+
+Verify:
+
+gio mime x-scheme-handler/clipstudio
+
+Test:
+
+gio open "clipstudio://test"
+🧪 Logs
+
+Logs are written to:
+
+~/.cache/clipstudio/
+
+Important files:
+
+handler.log
+
+worker.script.log
+
+These are very helpful when troubleshooting.
+
+🐛 Known Limitations
+
+Designed for Bottles Flatpak environments
+
+Assumes standard Clip Studio install inside the bottle
+
+Not yet tested with non-Bottles Wine setups
+
+🤝 Contributing
+
+Issues and pull requests are welcome — especially for:
+
+Non-Flatpak Bottles setups
+
+Lutris support
+
+Pure Wine support
+
+Better auto-detection of bottle/program names
+
+📜 License
+
+MIT (or choose your preferred license)
+
+❤️ Acknowledgements
+
+Thanks to the Linux art community and Bottles project for making Clip Studio on Linux possible.
