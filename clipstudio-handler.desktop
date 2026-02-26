@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Clip Studio Scheme Handler
+NoDisplay=true
+Exec=/usr/bin/clipstudio-handler %u
+MimeType=x-scheme-handler/clipstudio;
+Terminal=false
