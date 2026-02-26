@@ -50,27 +50,27 @@ Download the `.deb` from Releases, then:
 ```bash
 sudo dpkg -i clipstudio-scheme-handler_*_all.deb
 sudo update-desktop-database /usr/share/applications
-
+```
 
 Verify:
-
+```bash
 gio mime x-scheme-handler/clipstudio
-
+```
 Test:
-
+```bash
 gio open "clipstudio://test"
+```
 🧪 Logs
 
 Logs are written to:
-
+```
 ~/.cache/clipstudio/
-
+```
 Important files:
-
+```
 handler.log
-
 worker.script.log
-
+```
 These are very helpful when troubleshooting.
 
 🐛 Known Limitations
