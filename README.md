@@ -1,24 +1,52 @@
-# clipstudio-scheme-handler (Linux + Bottles)
+# Clip Studio Scheme Handler (Linux)
 
-Open `clipstudio://` links from the Clip Studio Assets site on Linux by forwarding them into a Bottles-installed Clip Studio.
+A native Linux `x-scheme-handler` that enables **clipstudio://** asset download links to work correctly when running Clip Studio through Bottles.
 
-This installs a URL scheme handler for:
+If clicking “Download” on Clip Studio Assets does nothing on Linux — this project fixes that.
 
-- `x-scheme-handler/clipstudio`
+---
 
-…and launches/forwards the URL into a Bottles bottle (default: `Clip Studio`).
+## ✨ Features
 
-## Requirements
+- Registers handler for `clipstudio://` URLs
+- Forwards downloads into Bottles Clip Studio
+- Auto-launches Clip Studio if needed
+- Prevents duplicate download triggers
+- Works with Flatpak Bottles setups
+- Lightweight shell implementation
 
-- Bottles (Flatpak): `com.usebottles.bottles`
+---
+
+## 🧩 How It Works
+
+When you click a Clip Studio Asset download link:
+
+1. Linux dispatches the `clipstudio://` URL
+2. The handler captures the URL
+3. The worker forwards it into the Bottles environment
+4. Clip Studio receives the download request
+
+Behavior closely mirrors Windows.
+
+---
+
+## ✅ Requirements
+
+You must have:
+
+- Flatpak
+- Bottles (`com.usebottles.bottles`)
 - A bottle named **Clip Studio**
-- Clip Studio installed in that bottle
-- A desktop environment that respects `xdg-mime` / `gio`
+- A program entry named **CLIPStudio**
 
-## Install (Debian/Ubuntu)
+⚠️ Names are case-sensitive.
 
-Download the `.deb` from Releases and:
+---
+
+## 📦 Installation
+
+Download the `.deb` from Releases, then:
 
 ```bash
-sudo dpkg -i clipstudio-scheme-handler_1.0.0_all.deb
+sudo dpkg -i clipstudio-scheme-handler_*_all.deb
 sudo update-desktop-database /usr/share/applications
