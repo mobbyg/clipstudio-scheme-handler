@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/clipstudio"
+QUEUE="$CACHE_DIR/queue.txt"
+HANDLER_LOG="$CACHE_DIR/handler.log"
+
+mkdir -p "$CACHE_DIR"
+touch "$HANDLER_LOG"
+
+ts() { date '+%F %T'; }
+log() { echo "$(ts) $*" >> "$HANDLER_LOG"; }
+
+URL="${1:-}"
+log "handler called with: '$URL'"
+
+# Queue the latest URL (overwrite so rapid clicks don’t backlog forever)
+printf '%s\n' "$URL" > "$QUEUE"
+
+# Start worker (it uses a lock to ensure single active instance)
+/usr/local/bin/clipstudio-worker >/dev/null 2>&1 & disown || true
+
+exit 0
